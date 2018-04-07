@@ -1,0 +1,363 @@
+<!doctype html>
+<html>
+<head>
+  <title>BoulderDash</title>
+  <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.min.js'></script>
+  <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/addons/p5.sound.min.js'></script>
+  <style>
+    @font-face {
+      font-family: 'PixelYourLife';
+      src: url('assets/font/pixelyourlife.eot');
+      src: url('assets/font/pixelyourlife.eot?#iefix') format('embedded-opentype'),
+      url('assets/font/pixelyourlife.woff') format('woff'),
+      url('assets/font/pixelyourlife.ttf') format('truetype'),
+      url('assets/font/pixelyourlife.svg#PixelYourLife') format('svg');
+    }
+
+    html, body {
+      font-family: 'PixelYourLife', sans-serif;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      background: black;
+      color: gold;
+    }
+
+    .textstat {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    #p5_loading {
+      padding: 10px
+    }
+
+    body canvas {
+      margin: auto;
+      display: block;
+      border: 2px solid #484242;
+    }
+
+    .outer {
+      display: table;
+      position: absolute;
+      height: 100%;
+      width: 100%;
+    }
+
+    .middle {
+      display: table-cell;
+      vertical-align: middle;
+    }
+
+    .inner {
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+
+
+  <script>
+    var blockDimension = 40;
+    var blocksPerWay = 4;
+    var frames = 10;
+    var mapLVL = 1;
+
+
+    var bd = new BoulderDash();
+    var score = 0;
+
+    function preload() {
+      bd.preload();
+    }
+
+    function setup() {
+      var container = createCanvas(blocksPerWay * blockDimension * 2 - blockDimension, blocksPerWay * blockDimension * 2 - blockDimension);
+      var bd = new BoulderDash();
+
+      container.parent('boulderdash');
+      noStroke();
+
+
+      frameRate(frames);
+
+      bd.drawMap();
+      bd.updateStats();
+    }
+
+
+    function draw() {
+      if(mapLVL === -1) {
+        document.getElementById("statsbd").innerHTML = "You won! Your score " + score;
+      }
+      else if(bd.die) {
+        bd.drawMap();
+        document.getElementById("statsbd").innerHTML = "You die! Your score " + score;
+      }
+      else {
+        bd.gravity(frameCount % 4);
+        bd.drawMap();
+      }
+    }
+
+    function BoulderDash() {
+      this.symPlayer = '&';
+      this.symWall = '#';
+      this.symStone = 'O';
+      this.symDiamond = '$';
+      this.symDoor = 'X';
+      this.symDirt = '.';
+      this.symEmpty = ' ';
+
+      this.imgPlayer;
+      this.imgWall;
+      this.imgStone;
+      this.imgDiamond;
+      this.imgDoor;
+      this.imgDirt;
+
+      this.soundRock;
+      this.soundDirt;
+      this.soundStep;
+      this.soundDie;
+      this.soundNextLVL;
+      this.soundKickStone;
+
+      this.curMap;
+      this.countDiamants;
+      this.die = false;
+
+
+      this.preload = function()
+      {
+        soundRock = loadSound('assets/rock.mp3');
+        soundDirt = loadSound('assets/dirt.mp3');
+        soundStep = loadSound('assets/step.mp3');
+        soundDie = loadSound('assets/die.mp3');
+        soundNextLVL = loadSound('assets/nextLVL.mp3');
+        soundKickStone = loadSound('assets/kickStone.mp3');
+
+        imgStone = loadImage('assets/stone.png');
+        imgWall = loadImage('assets/stonewall.png');
+        imgPlayer = loadImage('assets/troglodyte-1.png');
+        imgDiamond = loadImage('assets/diamond.png');
+        imgDoor = loadImage('assets/house.png');
+        imgDirt = loadImage('assets/dirt.jpg');
+
+        this.getMap(mapLVL);
+      }
+
+      this.findPlayer = function() {
+        for(var i = 0; i < curMap.length; ++i)
+          for(var j = 0; j < curMap[i].length; ++j)
+            if(curMap[i][j] === this.symPlayer)
+              return createVector(j, i);
+
+        return null;
+      }
+
+      this.updateStats = function() {
+        document.getElementById("statsbd").innerHTML = "Level: " + mapLVL + ", Score: " + score;
+      }
+
+
+      this.drawMap = function() {
+        background(30);
+
+        var player = this.findPlayer();
+
+        var drawX, drawY = -1;
+
+        for(var i = player.y - blocksPerWay; i < player.y + blocksPerWay; ++i) {
+          drawX = -1;
+          for(var j = player.x - blocksPerWay; j < player.x + blocksPerWay; ++j, ++drawX)
+            if(i >= 0 && i < curMap.length && j >= 0 && j < curMap[i].length)
+              switch(curMap[i][j]) {
+                case this.symPlayer:
+                  image(imgPlayer, drawX * blockDimension, drawY * blockDimension, blockDimension, blockDimension);
+                  break;
+
+                case this.symWall:
+                  image(imgWall, drawX * blockDimension, drawY * blockDimension, blockDimension, blockDimension);
+                  break;
+
+                case this.symStone:
+                  image(imgStone, drawX * blockDimension, drawY * blockDimension, blockDimension, blockDimension);
+                  break;
+
+                case this.symDiamond:
+                  image(imgDiamond, drawX * blockDimension, drawY * blockDimension, blockDimension, blockDimension);
+                  break;
+
+                case this.symDoor:
+                  image(imgDoor, drawX * blockDimension, drawY * blockDimension, blockDimension, blockDimension);
+                  break;
+
+                case this.symDirt:
+                  image(imgDirt, drawX * blockDimension, drawY * blockDimension, blockDimension, blockDimension);
+                  break;
+              }
+          ++drawY;
+        }
+      }
+
+
+      this.getMap = function(name) {
+        this.die = false;
+        curMap = readTextFile('maps/' + name + '.txt');
+        if(curMap.length === 0) {
+          mapLVL = -1;
+          return;
+        }
+
+        var x = 0, y = 0;
+        var matrix = [];
+
+        matrix[0] = [];
+        this.countDiamants = 0;
+
+        for(var i = 0; i < curMap.length; ++i) {
+          if(curMap[i] === this.symDiamond)
+            this.countDiamants++;
+          if(curMap[i] === "\n") {
+            ++y;
+            x = 0;
+            matrix[y] = [];
+          }
+          else
+            matrix[y][x++] = curMap[i];
+        }
+
+        // remove last row if it is empty
+        if(matrix[matrix.length - 1].length === 0)
+          matrix.splice(matrix.length - 1, 1);
+
+        curMap = matrix;
+      }
+
+      this.direction = function(y, x) {
+        if(this.die)
+          return;
+        var player = this.findPlayer();
+
+        switch(curMap[player.y + y][player.x + x]) {
+          case this.symDiamond:
+            this.countDiamants--;
+            ++score;
+          case this.symDirt:
+            soundDirt.play();
+          case this.symEmpty:
+            curMap[player.y + y][player.x + x] = this.symPlayer;
+            curMap[player.y][player.x] = this.symEmpty;
+            soundStep.play();
+            break;
+
+          case this.symDoor:
+            if(this.countDiamants <= 0) {
+              this.getMap(++mapLVL);
+              soundNextLVL.play();
+              score += 50;
+            }
+            break;
+
+          case this.symStone:
+            if(curMap[player.y + y * 2][player.x + x * 2] === this.symEmpty) {
+              soundRock.play();
+              curMap[player.y + y * 2][player.x + x * 2] = this.symStone;
+              curMap[player.y + y][player.x + x] = this.symPlayer;
+              curMap[player.y][player.x] = this.symEmpty;
+            }
+        }
+
+        this.updateStats();
+      }
+
+      this.gravity = function(work) {
+        if(work != 0)
+          return;
+        // starting from end for animation
+        for(var i = curMap.length - 1; i >= 0; --i)
+          for(var j = curMap[i].length - 1; j >= 0; --j)
+            if(curMap[i][j] === this.symEmpty && (curMap[i - 1][j] === this.symStone || curMap[i - 1][j] === this.symDiamond)) {
+              if(curMap[i + 1][j] === this.symPlayer) {
+                this.die = true;
+                soundDie.play();
+              } else if(curMap[i + 1][j] !== this.symEmpty)
+                soundKickStone.play();
+              curMap[i][j] = curMap[i - 1][j];
+              curMap[i - 1][j] = this.symEmpty;
+
+            }
+      }
+    }
+
+    function keyPressed() {
+      switch(keyCode) {
+        case 87://w
+        case UP_ARROW:
+          bd.direction(-1, 0);
+          break;
+
+        case 65://a
+        case LEFT_ARROW:
+          bd.direction(0, -1);
+          break;
+
+        case 83://s
+        case DOWN_ARROW:
+          bd.direction(1, 0);
+          break;
+
+        case 68://d
+        case RIGHT_ARROW:
+          bd.direction(0, 1);
+          break;
+
+        case 82://r
+          if(bd.die === false && mapLVL !== -1) {
+            score += bd.countDiamants;
+            bd.getMap(mapLVL);
+            score -= bd.countDiamants;
+          } else {
+            mapLVL = 1;
+            bd.getMap(mapLVL);
+            score = 0;
+          }
+          bd.updateStats();
+          break;
+      }
+    }
+
+    function readTextFile(file) {
+      var rawFile = new XMLHttpRequest();
+      var allText = '';
+
+      rawFile.open("GET", file, false);
+
+      rawFile.onreadystatechange = function() {
+        if(rawFile.readyState === 4 && (rawFile.status === 200 || rawFile.status === 0))
+          allText = rawFile.responseText;
+      }
+      rawFile.send(null);
+
+      return allText;
+    }
+
+    new p5();
+  </script>
+
+</head>
+<body>
+<div class="outer">
+  <div class="middle">
+    <div class="inner">
+      <div id="boulderdash"></div>
+      <b>
+        <div class="textstat" id="statsbd"></div>
+      </b>
+      <div class="textstat">wasd/↑←↓→ - move<br>r - restart</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

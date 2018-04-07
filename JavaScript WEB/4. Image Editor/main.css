@@ -1,0 +1,148 @@
+html, body {
+    background-color: #272727;
+    color: #ffe662;
+}
+
+button, .button
+{
+    margin: 0 5px;
+    background: #454545;
+    color: wheat;
+    border: 2px solid #5a5a5a;
+    border-radius: 3px;
+}
+
+button:hover, .button:hover
+{
+    background: #626262;
+}
+
+img, canvas
+{
+    border: 2px solid #454545;
+}
+
+.right
+{
+    float: right;
+}
+
+.left
+{
+    float: left;
+}
+
+.range
+{
+    max-width: 200px;
+    -webkit-appearance: none;
+    cursor: pointer;
+    height: 9px;
+    border-radius: 3px;
+    background-color: #ffe662;
+}
+
+.range::-webkit-slider-thumb {
+    height: 26px;
+    width: 16px;
+    border-radius: 3px;
+    background: #454545;
+    -webkit-appearance: none;
+}
+
+.range:focus {
+    outline: none;
+}
+
+
+.block-line
+{
+    display: table-row;
+}
+
+.bound
+{
+    max-width: 550px;
+    max-height: 500px;
+}
+.inline
+{
+    display: flex;
+    margin-top: 10px;
+}
+
+.container
+{
+    display: table;
+    margin: auto;
+}
+
+.container-centered
+{
+    margin: auto;
+    display: inherit;
+}
+
+.init
+{
+    display: initial;
+}
+
+.text-red
+{
+    color: #b64141;
+}
+
+.text-green
+{
+    color: #448801;
+}
+
+.text-blue
+{
+    color: #4682b4;
+}
+
+.bg-white
+{
+    background-color: white;
+}
+
+#menu::before {
+    content: "<";
+}
+
+#menu:hover::before {
+    content:'';
+}
+
+#menu {
+    width:10px;
+    background: #3f3f40;
+    position:absolute;
+    overflow:scroll;
+    top:0;
+    left:0;
+    height:100%;
+    content: "asd";
+}
+#menu:hover {
+    width: 25%;
+}
+#menu ul
+{
+    margin-left: 10px;
+    padding: 0;
+}
+#menu:hover ul
+{
+    margin: 0;
+}
+#menu ul li {
+    min-height:20px;
+    margin: 2px;
+    border:1px solid black;
+    list-style:none;
+    background: #353535;
+    padding: 5px;
+}

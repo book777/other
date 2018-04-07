@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+	<head>
+		<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.min.js'></script>
+		<style>
+			html, body {
+				overflow: hidden;
+				margin: 0;
+				padding: 0;
+				background:white;
+			}
+		</style>
+
+
+		<script type='text/javascript' src='z1.js'></script>
+
+		<script>
+			var sunColor = 255;
+			var sunMoveCount = 0;
+			var toMorning = 0;
+
+
+			function setup()
+			{
+				createCanvas(windowWidth, windowHeight);
+				frameRate(60);
+					
+				ellipseMode(RADIUS);
+			}
+
+			function draw()
+			{	
+				noStroke();
+				background(255+sunColor, sunColor, sunColor-150);
+
+				// sun
+				fill(255, 255, 0);
+				var sunXPos = 400+Math.cos(sunMoveCount*Math.PI/180)*300;
+				var sunYPos = 600+Math.sin(sunMoveCount*Math.PI/180)*500;
+				drawSunGradient(sunXPos, sunYPos, 150);
+				//ellipse(sunXPos, sunYPos, 150); 	
+				sunMoveCount += 0.2;
+				
+				if(toMorning)
+					sunColor += 0.35;
+				else
+					sunColor -= 0.35;
+				
+				if (sunColor <= 0)
+					toMorning = 1;
+				if (sunColor >= 255)
+					toMorning = 0;
+				
+				
+				fill(222, 184, 135);
+				// house bottom
+				rect(300, 380, 200, 200);
+				// house wondow
+				fill(255);
+				rect(349, 419, 50, 50);
+				rect(400, 419, 50, 50);
+				rect(349, 470, 50, 50);
+				rect(400, 470, 50, 50);
+				// house top
+				fill(128, 0, 0);
+				triangle(250, 400, 550, 400, 400, 290);
+				
+				
+				// grass
+				fill(34, 139, 34);
+				rect(0, 580, windowWidth, windowHeight);
+					
+				
+				// tree
+				stroke(50);
+				strokeWeight(3);
+				translate(700, 579);
+				fractalTree(70);
+			}
+
+
+			function fractalTree(len)
+			{
+			  line(0, 0, 0, -len);
+			  translate(0, -len);
+			  if(len > 5)
+			  {
+				push();
+				rotate(PI/3);
+				fractalTree(len * 0.5);
+				pop();
+				
+				push();
+				rotate(-PI/4);
+				fractalTree(len * 0.7);
+				pop();
+			  }
+			}
+
+			function drawSunGradient(x, y, radius)
+			{
+				var h = 0;
+				for(var r = radius; r > 0; --r)
+				{
+					fill(255, 100+h, 0);
+					ellipse(x, y, r, r);
+					h = (radius - r) / (radius/205);
+				}
+			}
+			new p5();
+		</script>
+
+	</head>
+	<body>
+	</body>
+</html>

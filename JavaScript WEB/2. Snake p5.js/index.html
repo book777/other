@@ -1,0 +1,269 @@
+<!doctype html>
+<html>
+	<head>
+		<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.min.js'></script>
+		<style>
+			html, body {
+				overflow: hidden;
+				margin: 0;
+				padding: 0;
+				background:white;
+			}
+		</style>
+
+		<script>
+		var blockDimension = 20;
+		var startSpeed = 6;
+
+		var bestScore = 0;
+		var snake;
+	
+
+		function setup()
+		{
+			createCanvas(windowWidth-(windowWidth%blockDimension), windowHeight-(windowHeight%blockDimension));
+			noStroke();
+			
+			snake = new Snake();
+			snake.makeFood();
+		}
+
+
+
+		function draw()
+		{
+			background(40);
+
+			if(snake.eat(snake.food))
+				snake.makeFood();
+		
+			snake.death();
+			snake.makeStep();
+		
+			snake.drawStats();
+			
+			snake.drawSnake();
+			snake.drawFood();
+		}
+
+		function Snake()
+		{
+			this.mapLimitation = false;
+			this.pointStep = 0.1;
+			this.x = 0;
+			this.y = 0;
+			this.xspeed = 1;
+			this.yspeed = 0;
+			
+			this.food;
+			this.total = 0;
+			this.snakeBody = [];
+			this.speed = startSpeed;
+			this.tempSpeedPerc; // speed 
+			this.stepsPerRate = 0;// secure skrypt from >1 direction per step			
+			
+			
+			this.drawFood = function()
+			{
+				fill(255, 50, 0);
+				
+				if(this.food.x != this.x || this.food.y != this.y)
+					rect(this.food.x, this.food.y, blockDimension, blockDimension);
+			}
+			
+			this.updInfoSpeed = function()
+			{
+				this.tempSpeedPerc = floor(this.speed/60*100);
+				frameRate(this.speed);
+			}
+			
+			this.addPoint = function()
+			{
+				this.total++;
+				if(this.speed < 60)
+				{
+					this.speed = this.speed + this.pointStep;
+					this.updInfoSpeed();
+				}
+			}
+			
+			this.setTitle = function()
+			{
+				document.title = this.getInfo();
+			}
+			
+			this.getInfo = function()
+			{
+				return "Score: "+this.total+", Speed: "+this.tempSpeedPerc+"%, Best score: "+bestScore;
+			}
+
+			this.drawStats = function()
+			{
+				fill(255);
+				textSize(14);
+				text(this.getInfo(), 10, height-10);
+			}
+			
+			this.eat = function(pos)
+			{
+				if (dist(this.x, this.y, pos.x, pos.y) < 1)
+				{
+					this.addPoint();
+					this.updInfoSpeed();
+					this.setTitle();
+					
+					return true;
+				} else
+					return false;
+			}
+
+			this.resetGame = function()
+			{
+				console.log('Game over');
+				
+				if(bestScore <= this.total)
+				{
+					bestScore = this.total;
+					document.cookie = "bestscore="+bestScore;
+				}
+				
+				this.total = 0;
+				
+				this.speed = startSpeed;
+				this.updInfoSpeed();
+				
+				this.snakeBody = [];
+				
+				this.makeFood();
+				this.setTitle();
+			}
+			
+			this.direction = function(x, y)
+			{
+				if(stepsPerRate < 1 && (x != -this.xspeed || y != -this.yspeed))
+				{
+					this.xspeed = x;
+					this.yspeed = y;
+				}
+				++stepsPerRate;
+			}
+
+			this.death = function()
+			{
+				for (var i = 0; i < this.snakeBody.length; i++)
+				{
+					var pos = this.snakeBody[i];
+					var d = dist(this.x, this.y, pos.x, pos.y);
+					
+					if (d < 1)
+						this.resetGame();
+				}
+			}
+
+			
+			this.makeStep = function()
+			{
+				for(var i = 0; i < this.snakeBody.length - 1; ++i)
+					this.snakeBody[i] = this.snakeBody[i + 1];
+				
+				if(this.total >= 1)
+					this.snakeBody[this.total - 1] = createVector(this.x, this.y);
+				
+				if(this.mapLimitation)
+				{
+					this.x = constrain(this.x + this.xspeed*blockDimension, 0, width-blockDimension);
+					this.y = constrain(this.y + this.yspeed*blockDimension, 0, height-blockDimension);
+				} else
+				{
+					this.x += this.xspeed*blockDimension;
+					this.y += this.yspeed*blockDimension;
+					
+					if(this.x >= width)
+						this.x %= width;	
+					if(this.x < 0)
+						this.x = width+this.x;	
+						
+					if(this.y >= height)
+						this.y %= height;
+					if(this.y < 0)
+						this.y = height+this.y;
+				}
+				
+				stepsPerRate = 0;
+			}
+
+			this.drawSnake = function()
+			{
+				//body
+				fill(0, 210, 0);
+				for(var i = 0; i < this.snakeBody.length; ++i)
+					rect(this.snakeBody[i].x, this.snakeBody[i].y, blockDimension, blockDimension);
+
+				//head
+				fill(100, 255, 0);
+				rect(this.x, this.y, blockDimension, blockDimension);
+			}
+			
+			this.makeFood = function()
+			{
+				var cols = width/blockDimension;
+				var rows = height/blockDimension;
+				
+				this.food = createVector(floor(random(cols)), floor(random(rows)));
+				this.food.mult(blockDimension);
+			}
+			
+			
+			this.updInfoSpeed();
+			frameRate(this.speed);
+			this.setTitle();
+		}
+
+		function keyPressed()
+		{
+			switch(keyCode)
+			{
+				case 87://w
+				case UP_ARROW:
+					snake.direction(0, -1);
+					break;
+					
+				case 65://a
+				case LEFT_ARROW:
+					snake.direction(-1, 0);
+					break;
+					
+				case 68://d
+				case RIGHT_ARROW:
+					snake.direction(1, 0);
+					break;
+					
+				case 83://s
+				case DOWN_ARROW:
+					snake.direction(0, 1);
+					break;
+					
+				case 82://r
+					snake.resetGame();
+					break;
+				
+				case 32://space
+					frameRate(snake.speed+10);
+					break;
+			}
+		}
+
+		function keyReleased()
+		{
+			if(keyCode == 32)// space
+				frameRate(snake.speed);
+		}
+		
+		
+		new p5();
+		</script>
+
+	</head>
+	<body>
+	</body>
+</html>
