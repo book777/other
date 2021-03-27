@@ -1,6 +1,6 @@
 /*  
   Author: book777
-  Version: 2.1
+  Version: 2.2
 */
 
 const clantags = {
@@ -379,7 +379,9 @@ function main() {
 
   const currentClantagName = clantagNames[tag - 1];
   const clantagEntry = clantags[currentClantagName];
+
   var currentTimestamp = calcTimestamp(speed);
+
   var newClantagCandidate = "";
 
   if (typeof clantagEntry === "object") {
@@ -400,6 +402,8 @@ function main() {
       } else {
         UI.SetEnabled(scriptItems, speedTitle, true);
       }
+
+      if (currentTimestamp === lastUpdateTimestamp) return;
 
       if ("arr" in clantagEntry) {
         const index = currentTimestamp % clantagEntry.arr.length;

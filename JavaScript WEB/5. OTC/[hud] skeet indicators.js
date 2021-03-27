@@ -28,7 +28,7 @@ var shared = {
 
 const colors = {
   black: [0, 0, 0, 255],
-  blackHalfTransparent: [0, 0, 0, 150],
+  blackHalfTransparent: [0, 0, 0, 190],
   white: [255, 255, 255, 255],
   red: [255, 0, 0, 255],
   yellow: [124, 195, 13, 255],
